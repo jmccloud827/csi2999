@@ -22,15 +22,21 @@ public class AI extends Application {
     Rectangle left = new Rectangle(-1,-1,5,802);
     Rectangle right = new Rectangle(396,-1,5,802);
     Circle start = new Circle(200,700,8);
+    ImageView fruit = new ImageView(new Image(getClass().getResourceAsStream("fruit.png")));
+    
     Button btnGo = new Button("Go!");
     Button btnStop = new Button("Stop!");
-    ImageView fruit = new ImageView(new Image(getClass().getResourceAsStream("fruit.png")));
-    Group stage = new Group(start,top,bottom,left,right,btnGo,fruit,btnStop);
+    Button btnReset = new Button("Reset!");
+    
+    Group stage = new Group(start,top,bottom,left,right,btnGo,fruit,btnStop,btnReset);
     Scene scene = new Scene(stage, 400, 835);
+    
+    Group flies;    
+    
+    Generation next;
+    
     boolean stop = false;
-    Group flies;
-    ImageView[] temp;
-    Generation next = new Generation(1000);
+    
     @Override
     public void start(Stage primaryStage) {
         top.setFill(Color.YELLOW);top.setStroke(Color.BLACK);
@@ -38,20 +44,43 @@ public class AI extends Application {
         left.setFill(Color.YELLOW);left.setStroke(Color.BLACK);
         right.setFill(Color.YELLOW);right.setStroke(Color.BLACK);
         start.setFill(Color.GRAY);
-        btnGo.setLayoutY(805);btnGo.setLayoutX(4);
-        btnStop.setLayoutY(805);btnStop.setLayoutX(45);
         fruit.setFitHeight(40);fruit.setFitWidth(45);fruit.setX(178);fruit.setY(45);
+        
+        btnGo.setLayoutY(805);btnGo.setLayoutX(4);
+        btnStop.setLayoutY(805);btnStop.setLayoutX(45);btnStop.setDisable(true);
+        btnReset.setLayoutY(805);btnReset.setLayoutX(96);btnReset.setDisable(true);
         
         btnGo.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                doMove();
+                stage.getChildren().removeAll(flies);
+                btnReset.setDisable(true);
+                btnGo.setDisable(true);
+                if(!stop){
+                    next = new Generation(1000,15,1000);
+                    btnStop.setDisable(false);
+                    doMove();
+                } else {
+                    stop = false;
+                    btnStop.setDisable(false);
+                    doMove();
+                }
             }
         });
         btnStop.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 stop = true;
+                btnStop.setDisable(true);
+            }
+        });
+        btnReset.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                stage.getChildren().removeAll(flies);
+                stop = false;
+                btnStop.setDisable(true);
+                btnReset.setDisable(true);
             }
         });
         
@@ -63,13 +92,28 @@ public class AI extends Application {
         Timeline time = new Timeline();
         time.setCycleCount(Timeline.INDEFINITE);
         KeyFrame frame = new KeyFrame(Duration.millis(20), new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent event){
-                
+        @Override
+        public void handle(ActionEvent event){
+                if(next.allDead()){
+                    time.stop();
+                    next.calcBestFly();
+                    System.out.println("Generation Number: " + next.genNum + "\nFitness: " + next.bestFly.fitness);
+                    next.nextGen();
+                    if(!stop){
+                        doMove();
+                    } else {
+                        btnReset.setDisable(false);
+                        btnGo.setDisable(false);
+                    }
+                } else {
+                    flies = new Group();
+                    flies = next.show();
+                    stage.getChildren().add(flies);
+                }
             }
         });
         time.getKeyFrames().add(frame);
-        time.play();
+        time.play(); 
     }
     public static void main(String[] args) {
         launch(args);
