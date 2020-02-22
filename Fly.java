@@ -14,11 +14,11 @@ public class Fly {
     double fitness;
     int xPos;
     int yPos;
-    int mutationRate;
+    Builder build;
     Random rnd = new Random();
-    Fly(int sNum, int mRate){
+    Fly(int sNum, Builder b){
+        build = b;
         stepNum = sNum;
-        mutationRate = mRate;
         moves = new int[stepNum][2];
         body = new ImageView(new Image(getClass().getResourceAsStream("fly.png")));
         body.setFitHeight(10);
@@ -60,26 +60,17 @@ public class Fly {
     }
     public void isDead(){
         double dist = Math.sqrt(Math.pow(xPos - 195, 2) + Math.pow(yPos - 60, 2));
-        if(moveNum >= stepNum || xPos < 0 || yPos < 0 || xPos > 390 || yPos > 790){
+        if(moveNum >= stepNum || build.hit(xPos, yPos)){
             dead = true;
         } else if(dist <= 20){
             dead = true;
             goal = true;
         }
     }
-    public void mutate(){
-        for(int i = 0; i < stepNum; i++){
-            if((rnd.nextInt(100) + 1) < mutationRate){
-                moves[i][0] = (rnd.nextInt(9)-4);
-                moves[i][1] = (rnd.nextInt(9)-4);
-            }
-        }
-    }
     public void reset(){
         dead = false;
         goal = false;
         moveNum = 0;
-        fitness = 0;
         xPos = 195;
         yPos = 695;
     }
