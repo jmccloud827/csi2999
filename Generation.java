@@ -3,6 +3,7 @@ package ai;
 import java.util.Random;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
+import javafx.scene.shape.Line;
 
 public class Generation {
     Fly[] population;
@@ -34,9 +35,9 @@ public class Generation {
     }
     public Group show(){
         Group temp = new Group();
+        allDead = true;
         for(int i = 0; i < popSize; i++){
             temp.getChildren().add(population[i].move());
-            allDead = true;
             if(!population[i].dead){
                 allDead = false;
             }
@@ -86,6 +87,10 @@ public class Generation {
         genNum++;
     }
     public Group showPath(){
-        return bestPath.show();
+        Group line = new Group();
+        for(int i = 75; i < solution.length - 100; i++){
+            line.getChildren().add(new Line(solution[i], i, solution[i + 1], i + 1));
+        }
+        return line;
     }
 }
